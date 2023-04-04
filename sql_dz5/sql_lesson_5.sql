@@ -1,41 +1,40 @@
-/*
-Создайте представление, в которое попадет информация о пользователях (имя, фамилия, город и пол), которые не старше 20 лет.
-*/
+CREATE TABLE  AUTO 
+(       
+	REGNUM VARCHAR(10) PRIMARY KEY, 
+	MARK VARCHAR(10), 
+	COLOR VARCHAR(15),
+  	PRICE_IN_DOLLARS DECIMAL,
+	RELEASEDT DATE, 
+	PHONENUM VARCHAR(15)
+);
 
-CREATE OR REPLACE VIEW view_user AS 
-SELECT CONCAT(firstname, ' ', lastname, '; ', hometown, '; ', gender) AS 'Пользователи (младше 20 лет)'
-FROM users u
-JOIN profiles p ON u.id = p.user_id
-WHERE TIMESTAMPDIFF(YEAR, birthday, NOW()) < 20
-GROUP BY u.id
-;
+INSERT INTO AUTO (REGNUM, MARK,	COLOR, PRICE_IN_DOLLARS, RELEASEDT, PHONENUM ) VALUES
+(111114,'LADA', 'КРАСНЫЙ', 18927, date'2008-01-01', '9152222221'),
+(111115,'VOLVO', 'КРАСНЫЙ', 64324, date'2013-01-01', '9173333334'),
+(111116,'BMW', 'СИНИЙ', 132492, date'2015-01-01', '9173333334'),
+(111121,'AUDI', 'СИНИЙ', 55205, date'2009-01-01', '9173333332'),
+(111122,'AUDI', 'СИНИЙ', 45000, date'2011-01-01', '9213333336'),
+(111113,'BMW', 'ЗЕЛЕНЫЙ', 78345, date'2007-01-01', '9214444444'),
+(111126,'LADA', 'ЗЕЛЕНЫЙ', 14980, date'2005-01-01', null),
+(111117,'BMW', 'СИНИЙ', 96023, date'2005-01-01', null),
+(111119,'LADA', 'СИНИЙ', 16700, date'2017-01-01', 9213333331),
+(111120,'SKODA', 'ЗЕЛЕНЫЙ', 30927, date'2008-01-01', '9152222221'),
+(111118,'SKODA', 'ЧЕРНЫЙ', 29001, date'2013-01-01', '9173333334');
 
-SELECT * FROM view_user;
--- DROP VIEW view_user;
+-- Создайте представление, в которое попадут автомобили стоимостью до 25 000 долларов
+CREATE VIEW c_class_cars
+AS SELECT *
+FROM AUTO
+WHERE PRICE_IN_DOLLARS < 25000;
 
+-- Измените в существующем представлении порог для стоимости: пусть цена будет до 30 000 долларов (используя оператор ALTER VIEW)
+ALTER VIEW c_class_cars 
+AS SELECT MARK, PRICE_IN_DOLLARS
+FROM AUTO
+WHERE PRICE_IN_DOLLARS < 30000;
 
-/*
-Найдите кол-во, отправленных сообщений каждым пользователем и выведите ранжированный список пользователь, 
-указав имя и фамилию пользователя, количество отправленных сообщений и место в рейтинге 
-(первое место у пользователя с максимальным количеством сообщений) . (используйте DENSE_RANK)
-*/
-
-SELECT 
-	DENSE_RANK() OVER (ORDER BY COUNT(from_user_id) DESC) AS 'Место в рейтинге',
-	COUNT(from_user_id) AS 'Количество отправленных сообщений',
-	CONCAT(firstname, ' ', lastname) AS 'Пользователи'
-FROM users u
-JOIN messages m ON u.id = m.from_user_id
-GROUP BY u.id
-;
-
-
-/*
-Выберите все сообщения, отсортируйте сообщения по возрастанию даты отправления (created_at) 
-и найдите разницу дат отправления между соседними сообщениями, получившегося списка. (используйте LEAD или LAG)
-*/
-
-SELECT *, 
-LAG(created_at, 1, 0) OVER (PARTITION BY TIMESTAMPDIFF(SECOND, created_at, created_at)) AS lag_created_at, -- смещение на 1 и вместо NULL будет 0
-LEAD(created_at) OVER (PARTITION BY TIMESTAMPDIFF(SECOND, created_at, created_at)) AS lead_created_at
-FROM messages ORDER BY TIMESTAMPDIFF(SECOND, created_at, NOW()) DESC;
+-- Создайте представление, в котором будут только автомобили марки “Шкода” и “Ауди”
+CREATE VIEW skoda_and_audi
+AS SELECT *
+FROM AUTO
+WHERE MARK='SKODA' OR MARK='AUDI';
